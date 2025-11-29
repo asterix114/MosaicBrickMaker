@@ -105,7 +105,7 @@ print(f"Processing image of size {width} x {height} pixels...")
 print(f"Using {len(color_list)} available colors")
 
 # Process all pixels at once using vectorized operations
-print("Processing pixels with vectorized operations...")
+print("Processing main image...")
 result_colors, color_names_matrix, min_indices = find_closest_colors_vectorized(
     image_array, color_rgbs, color_names
 )
@@ -113,23 +113,42 @@ result_colors, color_names_matrix, min_indices = find_closest_colors_vectorized(
 # Create the modified image from the result array
 puffin_image_thumbnail = Image.fromarray(result_colors.astype(np.uint8))
 
-# Calculate color usage statistics
+# Calculate color usage statistics for the main image
 unique_indices, counts = np.unique(min_indices, return_counts=True)
-color_usage = {color_names[i]: count for i, count in zip(unique_indices, counts)}
+color_usage_main = {color_names[i]: count for i, count in zip(unique_indices, counts)}
 
 # Show the modified image
-print("Showing modified image...")
 puffin_image_thumbnail.show()
 
-# Create and show thumbnail version
-print("Creating thumbnail...")
-thumbnail_copy = puffin_image_thumbnail.copy()
-thumbnail_copy.thumbnail((32, 32))
-thumbnail_copy.show()
+# Create the 32x32 thumbnail
+thumbnail_32x32 = puffin_image_thumbnail.copy()
+thumbnail_32x32.thumbnail((32, 32))
+thumbnail_32x32.show()
 
-# Print color usage statistics
-print("\nColor usage statistics (39 used colors percentage):")
-sorted_colors = sorted(color_usage.items(), key=lambda x: x[1], reverse=True)
-for color_name, count in sorted_colors[:39]:
+# Convert the 32x32 thumbnail to numpy array and process it
+thumbnail_array = np.array(thumbnail_32x32)
+print(f"Processing 32x32 thumbnail of size {thumbnail_array.shape[1]} x {thumbnail_array.shape[0]} pixels...")
+
+# Process the 32x32 thumbnail to map its colors
+result_colors_32, color_names_matrix_32, min_indices_32 = find_closest_colors_vectorized(
+    thumbnail_array, color_rgbs, color_names
+)
+
+# Calculate color usage statistics for the 32x32 thumbnail
+unique_indices_32, counts_32 = np.unique(min_indices_32, return_counts=True)
+color_usage_32x32 = {color_names[i]: count for i, count in zip(unique_indices_32, counts_32)}
+
+# Print color usage statistics for the main image
+print("\nColor usage in the main image (top 39 colors):")
+sorted_colors_main = sorted(color_usage_main.items(), key=lambda x: x[1], reverse=True)
+for color_name, count in sorted_colors_main[:39]:
     percentage = (count / (width * height)) * 100
+    print(f"{color_name}: {count} pixels ({percentage:.2f}%)")
+
+# Print color usage statistics for the 32x32 thumbnail
+print("\nColor usage in the 32x32 thumbnail (top 39 colors):")
+sorted_colors_32 = sorted(color_usage_32x32.items(), key=lambda x: x[1], reverse=True)
+total_pixels_32 = thumbnail_array.shape[0] * thumbnail_array.shape[1]
+for color_name, count in sorted_colors_32[:39]:
+    percentage = (count / total_pixels_32) * 100
     print(f"{color_name}: {count} pixels ({percentage:.2f}%)")
