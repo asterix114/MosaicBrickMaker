@@ -24,7 +24,7 @@ def find_closest_colors_vectorized(pixels, color_rgbs, color_names):
     return result_colors, color_names_matrix, min_indices
 
 # Load the image
-puffin_image = Image.open('C:/Users/ossip/Documents/projekter/DIYMosaicMaker[DMM]/Screenshot_20_crooped.png')
+puffin_image = Image.open('/Screenshot_20_crooped.png')
 
 puffin_image_150px = puffin_image.copy()
 puffin_image_150px.thumbnail((150, 150))
@@ -84,7 +84,7 @@ color_name_list = []
 for category_name, category_colors in colors.items():
     for color_name, rgb in category_colors.items():
         color_list.append(rgb)
-        color_name_list.append(f"{category_name} - {color_name}")
+        color_name_list.append(f"{color_name}")
 
 # Convert to numpy arrays for faster computation
 color_rgbs = np.array(color_list)
@@ -138,17 +138,19 @@ result_colors_32, color_names_matrix_32, min_indices_32 = find_closest_colors_ve
 unique_indices_32, counts_32 = np.unique(min_indices_32, return_counts=True)
 color_usage_32x32 = {color_names[i]: count for i, count in zip(unique_indices_32, counts_32)}
 
-# Print color usage statistics for the main image
-print("\nColor usage in the main image (top 39 colors):")
-sorted_colors_main = sorted(color_usage_main.items(), key=lambda x: x[1], reverse=True)
-for color_name, count in sorted_colors_main[:39]:
-    percentage = (count / (width * height)) * 100
-    print(f"{color_name}: {count} pixels ({percentage:.2f}%)")
+# Prepare the output string
+output_str = ""
 
-# Print color usage statistics for the 32x32 thumbnail
-print("\nColor usage in the 32x32 thumbnail (top 39 colors):")
+# Add color usage statistics for the 32x32 thumbnail
 sorted_colors_32 = sorted(color_usage_32x32.items(), key=lambda x: x[1], reverse=True)
 total_pixels_32 = thumbnail_array.shape[0] * thumbnail_array.shape[1]
 for color_name, count in sorted_colors_32[:39]:
     percentage = (count / total_pixels_32) * 100
-    print(f"{color_name}: {count} pixels ({percentage:.2f}%)")
+    output_str += f"{color_name} {count} {category_name}('s) ({percentage:.2f}%)\n"
+
+# Save the output string to a .txt file
+
+with open('/legopartslist.txt', 'w') as f:
+    f.write(output_str)
+
+print("Results saved to 'color_usage_results.txt'")
