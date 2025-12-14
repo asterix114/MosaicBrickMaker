@@ -5,3 +5,4 @@ Watch my video to learn how
 
 Or follow the text underneath here
 1. download and install vscode or an IDE
+[Flat Tile 1X1, Round](https://www.lego.com/pick-and-build/pick-a-brick?icmp=PAB_All_Pieces&system=LEGO&query=FLAT+TILE+1X1%2C+ROUND)
