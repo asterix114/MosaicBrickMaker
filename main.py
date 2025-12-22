@@ -1,8 +1,8 @@
-from PIL import Image
+from PIL import Image, ImageDraw, ImageOps
 import numpy as np
 
 def find_closest_colors_vectorized(pixels, color_rgbs, color_names):
-    """Find closest colors for all pixels at once using vectorized operations"""
+    "Find closest colors for all pixels at once using vectorized operations"
     # Reshape pixels to 2D array (height*width, 3)
     pixels_flat = pixels.reshape(-1, 3)
     
@@ -13,24 +13,31 @@ def find_closest_colors_vectorized(pixels, color_rgbs, color_names):
     # Find closest color indices for all pixels
     min_indices = np.argmin(distances, axis=1)
     
-    # Get closest colors and names
+    # Get closest colors (skip names/matrix since unused)
     closest_colors = color_rgbs[min_indices]
-    closest_names = [color_names[i] for i in min_indices]
     
     # Reshape back to image dimensions
     result_colors = closest_colors.reshape(pixels.shape)
-    color_names_matrix = np.array(closest_names).reshape(pixels.shape[0], pixels.shape[1])
     
-    return result_colors, color_names_matrix, min_indices
+    # Return None for unused color_names_matrix to match original signature
+    return result_colors, None, min_indices
 
 # Load the image
-puffin_image = Image.open('/Screenshot_20_crooped.png')
+puffin_image = Image.open('C:/Users/ossip/Documents/projekter/DIYMosaicMaker[DMM]/Screenshot_20_crooped.png')
+
+thumbnail_x = 32 # Width
+thumbnail_y = 32 # Height
+
+value = (puffin_image.width * 0.055) # experiment with this number if you have a lower pixel count like 128 x 128 or else it would be to pixelated
+puffin_image
 
 puffin_image_150px = puffin_image.copy()
-puffin_image_150px.thumbnail((150, 150))
+puffin_image_150px.thumbnail((value, value))
 
-# Scale the image back up to its original size
-puffin_image = puffin_image_150px.resize((1361, 1361), resample=Image.Resampling.NEAREST)
+value2 = (puffin_image.width // 2) # // 2 is the same as doing * 0.5 but without the .0 at the end
+value3 = (puffin_image.height // 2)
+puffin_image = puffin_image_150px.resize((value2, value3), resample=Image.Resampling.NEAREST)
+puffin_image_150px
 
 # Define the colors as RGB tuples
 colors = {
@@ -87,7 +94,7 @@ for category_name, category_colors in colors.items():
         color_name_list.append(f"{color_name}")
 
 # Convert to numpy arrays for faster computation
-color_rgbs = np.array(color_list)
+color_rgbs = np.asarray(color_list)
 color_names = color_name_list
 
 # Create a thumbnail copy
@@ -101,12 +108,10 @@ if puffin_image_thumbnail.mode != 'RGB':
 image_array = np.array(puffin_image_thumbnail)
 height, width, channels = image_array.shape
 
-print(f"Processing image of size {width} x {height} pixels...")
 print(f"Using {len(color_list)} available colors")
 
 # Process all pixels at once using vectorized operations
-print("Processing main image...")
-result_colors, color_names_matrix, min_indices = find_closest_colors_vectorized(
+result_colors, _, min_indices = find_closest_colors_vectorized(
     image_array, color_rgbs, color_names
 )
 
@@ -119,18 +124,19 @@ color_usage_main = {color_names[i]: count for i, count in zip(unique_indices, co
 
 # Show the modified image
 puffin_image_thumbnail.show()
+puffin_image_thumbnail
 
-# Create the 32x32 thumbnail
-thumbnail_32x32 = puffin_image_thumbnail.copy()
-thumbnail_32x32.thumbnail((32, 32))
-thumbnail_32x32.show()
+# Create the thumbnail
+thumbnail = puffin_image_thumbnail.copy()
+thumbnail.thumbnail((thumbnail_x, thumbnail_y))
+thumbnail.show()
 
-# Convert the 32x32 thumbnail to numpy array and process it
-thumbnail_array = np.array(thumbnail_32x32)
-print(f"Processing 32x32 thumbnail of size {thumbnail_array.shape[1]} x {thumbnail_array.shape[0]} pixels...")
+# Convert the thumbnail to numpy array and process it
+thumbnail_array = np.array(thumbnail)
+print(f"Processing thumbnail of size {thumbnail_array.shape[1]} x {thumbnail_array.shape[0]} pixels")
 
-# Process the 32x32 thumbnail to map its colors
-result_colors_32, color_names_matrix_32, min_indices_32 = find_closest_colors_vectorized(
+# Process the thumbnail to map its colors
+result_colors_32, _, min_indices_32 = find_closest_colors_vectorized(
     thumbnail_array, color_rgbs, color_names
 )
 
@@ -150,7 +156,31 @@ for color_name, count in sorted_colors_32[:39]:
 
 # Save the output string to a .txt file
 
-with open('/legopartslist.txt', 'w') as f:
+with open('C:/Users/ossip/Documents/projekter/DIYMosaicMaker[DMM]/legopartslist.txt', 'w') as f:
     f.write(output_str)
 
-print("Results saved to 'color_usage_results.txt'")
+print("Results saved to 'legopartslist.txt'")
+
+
+# Build manual
+# I need to know every single lego 1x1 flat plate and take the x and y pixel value and use it most effinectly 32 x 32 should be x 16 + 16 y 16 +16 and 2 by x and 2 by y
+instructions = thumbnail.copy()
+instructions2 = instructions.resize((value2, value3))
+instructions3 = ImageOps.expand(instructions2, border=(50, 50), fill=(255, 255, 255))
+width, height = value2, value3
+
+border_size = 50
+grid_start_x = border_size
+grid_start_y = border_size
+grid_end_x = border_size + width
+grid_end_y = border_size + height
+
+img1 = ImageDraw.Draw(instructions3) # Object to draw over main image
+for i in range(grid_start_x, grid_end_x, 42):
+    img1.line([i, grid_start_y, i, grid_end_y], fill="blue", width=1)
+
+for j in range(grid_start_y, grid_end_y, 42):
+    img1.line([grid_start_x, j, grid_end_x, j], fill="red", width=1)
+instructions3.show()
+
+# Hi :D
