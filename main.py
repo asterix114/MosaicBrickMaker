@@ -25,8 +25,8 @@ def find_closest_colors_vectorized(pixels, color_rgbs, color_names):
 # Load the image
 puffin_image = Image.open('C:/Users/ossip/Documents/projekter/DIYMosaicMaker[DMM]/Screenshot_20_crooped.png')
 
-thumbnail_x = 32 # Width
-thumbnail_y = 32 # Height
+thumbnail_x = 128 # Width
+thumbnail_y = 128 # Height
 
 value = (puffin_image.width * 0.055) # experiment with this number if you have a lower pixel count like 128 x 128 or else it would be to pixelated
 puffin_image
@@ -172,10 +172,11 @@ print("Results saved to 'legopartslist.txt'")
 instructions = thumbnail.copy()
 x16W = (instructions.width * 16)
 x16H = (instructions.height * 16)
+print(instructions.width, instructions.height)
 instructions4 = instructions.resize((x16W, x16H), resample=Image.Resampling.NEAREST)
 spcbetwn_ech_linW = 16
 spcbetwn_ech_linH = 16
-width, height = valueW, valueH
+width, height = x16W, x16H
 img1 = ImageDraw.Draw(instructions4) # Object to draw over main image
 for i in range(0, width, spcbetwn_ech_linW):
     img1.line([i, 0, i, height], fill="blue", width=1) # vertical   
