@@ -34,12 +34,12 @@ puffin_image
 puffin_image_150px = puffin_image.copy()
 puffin_image_150px.thumbnail((value, value))
 
-value2 = (puffin_image.width // 2) # // 2 is the same as doing * 0.5 but without the .0 at the end
-value3 = (puffin_image.height // 2)
-puffin_image = puffin_image_150px.resize((value2, value3), resample=Image.Resampling.NEAREST)
+valueW = (puffin_image.width // 2) # // 2 is the same as doing * 0.5 but without the .0 at the end
+valueH = (puffin_image.height // 2)
+puffin_image = puffin_image_150px.resize((valueW, valueH), resample=Image.Resampling.NEAREST)
 puffin_image_150px
 
-# Define the colors as RGB tuples
+# Define the colors as RGB tuples and comment out the colors you don't want
 colors = {
     "RoundTile": {
         "Bright Red": (180, 0, 0),
@@ -131,6 +131,7 @@ thumbnail = puffin_image_thumbnail.copy()
 thumbnail.thumbnail((thumbnail_x, thumbnail_y))
 thumbnail.show()
 
+
 # Convert the thumbnail to numpy array and process it
 thumbnail_array = np.array(thumbnail)
 print(f"Processing thumbnail of size {thumbnail_array.shape[1]} x {thumbnail_array.shape[0]} pixels")
@@ -147,17 +148,21 @@ color_usage_32x32 = {color_names[i]: count for i, count in zip(unique_indices_32
 # Prepare the output string
 output_str = ""
 
+# Add the category name once
+output_str += f"{category_name}\n"  # Print the category name
+
 # Add color usage statistics for the 32x32 thumbnail
 sorted_colors_32 = sorted(color_usage_32x32.items(), key=lambda x: x[1], reverse=True)
 total_pixels_32 = thumbnail_array.shape[0] * thumbnail_array.shape[1]
-for color_name, count in sorted_colors_32[:39]:
+
+for color_name, count in sorted_colors_32[:39]:  # 39 as in the 39 colors that are in the list
     percentage = (count / total_pixels_32) * 100
-    output_str += f"{color_name} {count} {category_name}('s) ({percentage:.2f}%)\n"
+    output_str += f"{color_name} {count} ({percentage:.2f}%)\n"
 
 # Save the output string to a .txt file
-
 with open('C:/Users/ossip/Documents/projekter/DIYMosaicMaker[DMM]/legopartslist.txt', 'w') as f:
     f.write(output_str)
+
 
 print("Results saved to 'legopartslist.txt'")
 
@@ -165,22 +170,21 @@ print("Results saved to 'legopartslist.txt'")
 # Build manual
 # I need to know every single lego 1x1 flat plate and take the x and y pixel value and use it most effinectly 32 x 32 should be x 16 + 16 y 16 +16 and 2 by x and 2 by y
 instructions = thumbnail.copy()
-instructions2 = instructions.resize((value2, value3))
-instructions3 = ImageOps.expand(instructions2, border=(50, 50), fill=(255, 255, 255))
-width, height = value2, value3
+x16W = (instructions.width * 16)
+x16H = (instructions.height * 16)
+instructions4 = instructions.resize((x16W, x16H), resample=Image.Resampling.NEAREST)
+spcbetwn_ech_linW = 16
+spcbetwn_ech_linH = 16
+width, height = valueW, valueH
+img1 = ImageDraw.Draw(instructions4) # Object to draw over main image
+for i in range(0, width, spcbetwn_ech_linW):
+    img1.line([i, 0, i, height], fill="blue", width=1) # vertical   
+for j in range(0, height, spcbetwn_ech_linH):
+    img1.line([0, j, width, j], fill="red", width=1) # Horizontal
 
-border_size = 50
-grid_start_x = border_size
-grid_start_y = border_size
-grid_end_x = border_size + width
-grid_end_y = border_size + height
+instructions2 = instructions4.resize((valueW, valueH))
 
-img1 = ImageDraw.Draw(instructions3) # Object to draw over main image
-for i in range(grid_start_x, grid_end_x, 42):
-    img1.line([i, grid_start_y, i, grid_end_y], fill="blue", width=1)
-
-for j in range(grid_start_y, grid_end_y, 42):
-    img1.line([grid_start_x, j, grid_end_x, j], fill="red", width=1)
+instructions3 = ImageOps.expand(instructions2, border=(150, 50, 150, 350), fill=(255, 255, 255))
 instructions3.show()
 
 # Hi :D
