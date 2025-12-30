@@ -1,4 +1,4 @@
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageDraw, ImageOps, ImageFont
 import numpy as np
 
 def find_closest_colors_vectorized(pixels, color_rgbs, color_names):
@@ -25,8 +25,8 @@ def find_closest_colors_vectorized(pixels, color_rgbs, color_names):
 # Load the image
 puffin_image = Image.open('C:/Users/ossip/Documents/projekter/DIYMosaicMaker[DMM]/Screenshot_20_crooped.png')
 
-thumbnail_x = 128 # Width
-thumbnail_y = 128 # Height
+thumbnail_x = 32 # Width
+thumbnail_y = 32 # Height
 
 value = (puffin_image.width * 0.055) # experiment with this number if you have a lower pixel count like 128 x 128 or else it would be to pixelated
 puffin_image
@@ -39,7 +39,7 @@ valueH = (puffin_image.height // 2)
 puffin_image = puffin_image_150px.resize((valueW, valueH), resample=Image.Resampling.NEAREST)
 puffin_image_150px
 
-# Define the colors as RGB tuples and comment out the colors you don't want
+# Comment out the colors you don't want
 colors = {
     "RoundTile": {
         "Bright Red": (180, 0, 0),
@@ -82,7 +82,13 @@ colors = {
         "Medium Stone Grey": (150, 150, 150),
         "Dark Stone Grey": (100, 100, 100)
     }
-}
+}   # delete the yellow, purple and the """" then you'll have the speical colors for the roundtile
+""" },
+      "RoundTileSpeical": {
+    "White Glow": "rgb(245, 243, 215)",
+    "Silver Metallic": "rgb(140, 140, 140)"
+  }
+} """
 
 # Combine all colors into a single list of RGB tuples and get their names
 color_list = []
@@ -137,55 +143,74 @@ thumbnail_array = np.array(thumbnail)
 print(f"Processing thumbnail of size {thumbnail_array.shape[1]} x {thumbnail_array.shape[0]} pixels")
 
 # Process the thumbnail to map its colors
-result_colors_32, _, min_indices_32 = find_closest_colors_vectorized(
+result_colors, _, min_indices = find_closest_colors_vectorized(
     thumbnail_array, color_rgbs, color_names
 )
 
-# Calculate color usage statistics for the 32x32 thumbnail
-unique_indices_32, counts_32 = np.unique(min_indices_32, return_counts=True)
-color_usage_32x32 = {color_names[i]: count for i, count in zip(unique_indices_32, counts_32)}
+# Calculate color usage statistics for the thumbnail
+unique_indices, counts = np.unique(min_indices, return_counts=True)
+color_usage = {color_names[i]: count for i, count in zip(unique_indices, counts)}
 
 # Prepare the output string
 output_str = ""
 
 # Add the category name once
-output_str += f"{category_name}\n"  # Print the category name
+# Build manual
+# I need to know every single lego 1x1 flat plate and take the x and y pixel value and use it most effinectly 32 x 32 should be x 16 + 16 y 16 +16 and 2 by x and 2 by y
+ 
+brick_frame = (str(thumbnail_x // 16) + " X" + " 16" + " (X)" + " X " + str(thumbnail_y // 16) + " X" + " 16" + " (Y)" + "\n" + "hello this is here where the parts for the frame should be") # This is the frame for the roundtile bricks
+output_str += f"If the brick only gets used ones or twice comment it out of the list of bricks\n{category_name}\n{brick_frame}\n"
 
-# Add color usage statistics for the 32x32 thumbnail
-sorted_colors_32 = sorted(color_usage_32x32.items(), key=lambda x: x[1], reverse=True)
-total_pixels_32 = thumbnail_array.shape[0] * thumbnail_array.shape[1]
+# Add color usage statistics for the thumbnail
+sorted_colors = sorted(color_usage.items(), key=lambda x: x[1], reverse=True)
+total_pixels = thumbnail_array.shape[0] * thumbnail_array.shape[1]
 
-for color_name, count in sorted_colors_32[:39]:  # 39 as in the 39 colors that are in the list
-    percentage = (count / total_pixels_32) * 100
+for color_name, count in sorted_colors[:39]:  # 39 as in the 39 colors that are in the list
+    percentage = (count / total_pixels) * 100
     output_str += f"{color_name} {count} ({percentage:.2f}%)\n"
 
 # Save the output string to a .txt file
-with open('C:/Users/ossip/Documents/projekter/DIYMosaicMaker[DMM]/legopartslist.txt', 'w') as f:
+with open('C:/Users/ossip/Documents/projekter/DIYMosaicMaker[DMM]/brickpartslist.txt', 'w') as f:
     f.write(output_str)
 
 
-print("Results saved to 'legopartslist.txt'")
+print("Results saved to 'brickpartslist.txt'")
 
-
-# Build manual
-# I need to know every single lego 1x1 flat plate and take the x and y pixel value and use it most effinectly 32 x 32 should be x 16 + 16 y 16 +16 and 2 by x and 2 by y
 instructions = thumbnail.copy()
 x16W = (instructions.width * 16)
 x16H = (instructions.height * 16)
-print(instructions.width, instructions.height)
-instructions4 = instructions.resize((x16W, x16H), resample=Image.Resampling.NEAREST)
+
+instructions2 = instructions.resize((x16W, x16H), resample=Image.Resampling.NEAREST)
+# instructions3 = instructions2.convert("RGBA") fix the pixels begin half invisible
 spcbetwn_ech_linW = 16
 spcbetwn_ech_linH = 16
 width, height = x16W, x16H
-img1 = ImageDraw.Draw(instructions4) # Object to draw over main image
+img1 = ImageDraw.Draw(instructions2) # Object to draw over main image
 for i in range(0, width, spcbetwn_ech_linW):
     img1.line([i, 0, i, height], fill="blue", width=1) # vertical   
 for j in range(0, height, spcbetwn_ech_linH):
     img1.line([0, j, width, j], fill="red", width=1) # Horizontal
 
-instructions2 = instructions4.resize((valueW, valueH))
+instructions3 = instructions2.resize((valueW, valueH))
 
-instructions3 = ImageOps.expand(instructions2, border=(150, 50, 150, 350), fill=(255, 255, 255))
-instructions3.show()
+instructions4 = ImageOps.expand(instructions3, border=(150, 50, 150, 400), fill=(255, 255, 255)) # left side top right side bottom
+
+img2 = ImageDraw.Draw(instructions4)
+font = ImageFont.load_default(60)
+
+x1 = "\n".join(str(instructions.width))
+x2 = "\n".join(str(instructions.height))
+
+x3 = instructions.width
+x4 = instructions.height
+
+# Add Text to an image
+img2.text((45, (valueH // 3) ), ((x1) + "\nX\n" + (x2)), font=font, fill=(0, 0, 0))
+img2.text(((valueW // 2), (valueH + 110)), (str(x3) + "X" + str(x4)), font=font, fill=(0, 0, 0))
+
+# img2.text() numbers for each pixel x and y
+
+# Display edited image
+instructions4.show()
 
 # Hi :D
