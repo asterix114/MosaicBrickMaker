@@ -23,7 +23,7 @@ def find_closest_colors_vectorized(pixels, color_rgbs, color_names):
     return result_colors, None, min_indices
 
 # Load the image
-puffin_image = Image.open('C:/Users/ossip/Documents/projekter/DIYMosaicMaker[DMM]/Screenshot_20_crooped.png')
+puffin_image = Image.open('')
 
 thumbnail_x = 32 # Width
 thumbnail_y = 32 # Height
@@ -214,3 +214,4 @@ img2.text(((valueW // 2), (valueH + 110)), (str(x3) + "X" + str(x4)), font=font,
 instructions4.show()
 
 # Hi :D
+
